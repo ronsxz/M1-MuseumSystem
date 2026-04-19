@@ -1,0 +1,44 @@
+package service;
+
+import db.DBConnection;
+import java.sql.*;
+import java.time.LocalDateTime;
+
+public class VisitorService {
+
+    public void recordEntry(String name, String ticketCode) {
+        String sql = "INSERT INTO visitor_entries(visitor_name, ticket_code, entry_time) VALUES (?,?,?)";
+
+        try (Connection conn = DBConnection.connect();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setString(2, ticketCode);
+            ps.setString(3, LocalDateTime.now().toString());
+            ps.executeUpdate();
+            System.out.println("Visitor entry recorded.");
+        } catch (Exception e) {
+            System.out.println("Visitor entry could not be recorded.");
+        }
+    }
+
+    public void viewEntries() {
+        String sql = "SELECT * FROM visitor_entries";
+
+        try (Connection conn = DBConnection.connect();
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
+            System.out.println("\nID | Name | Ticket | Time");
+            System.out.println("--------------------------------------");
+
+            while (rs.next()) {
+                System.out.println(
+                        rs.getInt("id") + " | " +
+                                rs.getString("visitor_name") + " | " +
+                                rs.getString("ticket_code") + " | " +
+                                rs.getString("entry_time"));
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading visitor entries: " + e.getMessage());
+        }
+    }
+}
