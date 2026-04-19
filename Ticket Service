@@ -1,0 +1,45 @@
+package service;
+
+import db.DBConnection;
+import java.sql.*;
+//import java.util.UUID;
+
+public class TicketService {
+
+    public String bookTicket(String visitorName) {
+
+        String ticketCode = "TCK-" + System.currentTimeMillis();
+        String sql = "INSERT INTO tickets(ticket_code, visitor_name, status) VALUES(?,?, 'PENDING')";
+
+        try (Connection conn = DBConnection.connect();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            if (conn == null) {
+                System.out.println("No DB connection.");
+                return null;
+            }
+            ps.setString(1, ticketCode);
+            ps.setString(2, visitorName);
+            ps.executeUpdate();
+            System.out.println("Ticket booked successfully!");
+            System.out.println("Ticket ID: " + ticketCode);
+            return ticketCode;
+        } catch (Exception e) {
+            System.out.println("Ticket booking failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public boolean validateTicket(String code) {
+        String sql = "SELECT * FROM tickets WHERE ticket_code=? AND is_valid=1";
+
+        try (Connection conn = DBConnection.connect();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
